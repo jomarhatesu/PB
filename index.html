@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Photo Booth</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Photo Booth NA EWAN</h1>
+
+  <video id="video" autoplay playsinline></video>
+  
+  <div class="buttons">
+    <button onclick="toggleMirror()">Flip</button>
+    <button onclick="takePhoto()">Capture</button>
+  </div>
+
+  <div id="outputContainer"></div>
+
+  <script>
+    const video = document.getElementById('video');
+    const outputContainer = document.getElementById('outputContainer');
+    let mirrored = false;
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      });
+
+    function toggleMirror() {
+      mirrored = !mirrored;
+      video.classList.toggle("mirrored", mirrored);
+    }
+
+    function takePhoto() {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      canvas.width = width;
+      canvas.height = height;
+
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      if (mirrored) {
+        context.translate(width, 0);
+        context.scale(-1, 1);
+      }
+
+      context.drawImage(video, 0, 0, width, height);
+      const dataURL = canvas.toDataURL('image/png');
+
+      const container = document.createElement('div');
+      container.classList.add('photo-block');
+
+      const img = document.createElement('img');
+      img.src = dataURL;
+
+      const downloadBtn = document.createElement('a');
+      downloadBtn.href = dataURL;
+      downloadBtn.download = 'photo.png';
+      downloadBtn.innerHTML = '<button>Download</button>';
+
+      container.appendChild(img);
+      container.appendChild(downloadBtn);
+      outputContainer.appendChild(container);
+    }
+  </script>
+</body>
+</html>
